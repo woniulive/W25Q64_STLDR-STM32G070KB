@@ -124,5 +124,61 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 }
 
 /* USER CODE BEGIN 1 */
+static uint8_t CSP_SPI_WriteEnable(void);
 
+uint8_t CSP_SPI_Init(void) {
+
+    return HAL_OK;
+}
+
+
+uint8_t CSP_SPI_Erase_Chip(void) {
+
+    uint8_t ret = HAL_OK;
+    return ret;
+}
+
+uint8_t CSP_SPI_AutoPollingMemReady(uint32_t timeout) {
+    uint8_t ret = HAL_OK;
+    return ret;
+}
+
+static uint8_t CSP_SPI_WriteEnable(void) {
+
+    uint8_t ret = HAL_OK;
+    return ret;
+}
+
+uint8_t CSP_SPI_Configuration(void) {
+
+    return HAL_OK;
+}
+
+uint8_t CSP_SPI_EraseSector(uint32_t EraseStartAddress, uint32_t EraseEndAddress) {
+
+    uint8_t ret = HAL_OK;
+    return ret;
+}
+
+uint8_t CSP_SPI_WriteMemory(uint8_t* buffer, uint32_t address,uint32_t buffer_size) {
+
+    uint8_t ret = HAL_OK;
+    return ret;
+}
+
+uint8_t CSP_SPI_ReadMemory(uint8_t* buffer, uint32_t address,uint32_t buffer_size) {
+
+    uint8_t ret = HAL_OK;
+    return ret;
+}
+
+uint8_t CSP_SPI_EnableMemoryMappedMode(void) {
+
+    return HAL_OK;
+}
+
+uint8_t CSP_SPI_ResetChip(void) {
+
+    return HAL_OK;
+}
 /* USER CODE END 1 */

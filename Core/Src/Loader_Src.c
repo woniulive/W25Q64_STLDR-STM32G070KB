@@ -1,4 +1,4 @@
-#include "quadspi.h"
+#include "spi.h"
 #include "main.h"
 #include "gpio.h"
 
@@ -40,16 +40,16 @@ Init(void) {
 
     MX_GPIO_Init();
 
-    __HAL_RCC_QSPI_FORCE_RESET();  //completely reset peripheral
-    __HAL_RCC_QSPI_RELEASE_RESET();
+    __HAL_RCC_SPI2_FORCE_RESET();  //completely reset peripheral
+    __HAL_RCC_SPI2_RELEASE_RESET();
 
-    if (CSP_QUADSPI_Init() != HAL_OK) {
+    if (CSP_SPI_Init() != HAL_OK) {
         __set_PRIMASK(1); //disable interrupts
         return LOADER_FAIL;
     }
 
 
-    if (CSP_QSPI_EnableMemoryMappedMode() != HAL_OK) {
+    if (CSP_SPI_EnableMemoryMappedMode() != HAL_OK) {
         __set_PRIMASK(1); //disable interrupts
         return LOADER_FAIL;
     }
@@ -57,6 +57,19 @@ Init(void) {
 
     __set_PRIMASK(1); //disable interrupts
     return LOADER_OK;
+}
+
+/**
+ * @brief   Read memory.
+ * @param   Address: page address
+ * @param   Size   : size of data
+ * @param   buffer : pointer to data buffer
+ * @retval  LOADER_OK = 1       : Operation succeeded
+ * @retval  LOADER_FAIL = 0 : Operation failed
+ */
+int Read (uint32_t Address, uint32_t Size, uint8_t* buffer)
+{
+    return 1;
 }
 
 /**
@@ -72,13 +85,13 @@ Write(uint32_t Address, uint32_t Size, uint8_t* buffer) {
 
     __set_PRIMASK(0); //enable interrupts
 
-    if (HAL_QSPI_Abort(&hqspi) != HAL_OK) {
+    if (HAL_SPI_Abort(&hspi2) != HAL_OK) {
         __set_PRIMASK(1); //disable interrupts
         return LOADER_FAIL;
     }
 
 
-    if (CSP_QSPI_WriteMemory((uint8_t*) buffer, (Address & (0x0fffffff)), Size) != HAL_OK) {
+    if (CSP_SPI_WriteMemory((uint8_t*) buffer, (Address & (0x0fffffff)), Size) != HAL_OK) {
         __set_PRIMASK(1); //disable interrupts
         return LOADER_FAIL;
     }
@@ -99,13 +112,13 @@ SectorErase(uint32_t EraseStartAddress, uint32_t EraseEndAddress) {
 
     __set_PRIMASK(0); //enable interrupts
 
-    if (HAL_QSPI_Abort(&hqspi) != HAL_OK) {
+    if (HAL_SPI_Abort(&hspi2) != HAL_OK) {
         __set_PRIMASK(1); //disable interrupts
         return LOADER_FAIL;
     }
 
 
-    if (CSP_QSPI_EraseSector(EraseStartAddress, EraseEndAddress) != HAL_OK) {
+    if (CSP_SPI_EraseSector(EraseStartAddress, EraseEndAddress) != HAL_OK) {
         __set_PRIMASK(1); //disable interrupts
         return LOADER_FAIL;
     }
@@ -129,13 +142,13 @@ MassErase(void) {
 
     __set_PRIMASK(0); //enable interrupts
 
-    if (HAL_QSPI_Abort(&hqspi) != HAL_OK) {
+    if (HAL_SPI_Abort(&hspi2) != HAL_OK) {
         __set_PRIMASK(1); //disable interrupts
         return LOADER_FAIL;
     }
 
 
-    if (CSP_QSPI_Erase_Chip() != HAL_OK) {
+    if (CSP_SPI_Erase_Chip() != HAL_OK) {
         __set_PRIMASK(1); //disable interrupts
         return LOADER_FAIL;
     }
@@ -237,7 +250,7 @@ Verify(uint32_t MemoryAddr, uint32_t RAMBufferAddr, uint32_t Size, uint32_t miss
     uint64_t checksum;
     Size *= 4;
 
-    if (CSP_QSPI_EnableMemoryMappedMode() != HAL_OK) {
+    if (CSP_SPI_EnableMemoryMappedMode() != HAL_OK) {
         __set_PRIMASK(1); //disable interrupts
         return LOADER_FAIL;
     }
