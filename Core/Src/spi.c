@@ -124,9 +124,19 @@ void HAL_SPI_MspDeInit(SPI_HandleTypeDef* spiHandle)
 }
 
 /* USER CODE BEGIN 1 */
+#include "gpio.h"
+
 static uint8_t CSP_SPI_WriteEnable(void);
 
 uint8_t CSP_SPI_Init(void) {
+
+    hspi2.Instance = SPI2;
+    if(HAL_SPI_DeInit(&hspi2) != HAL_OK)
+    {
+        return HAL_ERROR;
+    }
+
+    MX_SPI2_Init();
 
     return HAL_OK;
 }
@@ -135,17 +145,20 @@ uint8_t CSP_SPI_Init(void) {
 uint8_t CSP_SPI_Erase_Chip(void) {
 
     uint8_t ret = HAL_OK;
+
     return ret;
 }
 
 uint8_t CSP_SPI_AutoPollingMemReady(uint32_t timeout) {
     uint8_t ret = HAL_OK;
+
     return ret;
 }
 
 static uint8_t CSP_SPI_WriteEnable(void) {
 
     uint8_t ret = HAL_OK;
+
     return ret;
 }
 
@@ -157,18 +170,21 @@ uint8_t CSP_SPI_Configuration(void) {
 uint8_t CSP_SPI_EraseSector(uint32_t EraseStartAddress, uint32_t EraseEndAddress) {
 
     uint8_t ret = HAL_OK;
+
     return ret;
 }
 
 uint8_t CSP_SPI_WriteMemory(uint8_t* buffer, uint32_t address,uint32_t buffer_size) {
 
     uint8_t ret = HAL_OK;
+
     return ret;
 }
 
 uint8_t CSP_SPI_ReadMemory(uint8_t* buffer, uint32_t address,uint32_t buffer_size) {
 
     uint8_t ret = HAL_OK;
+
     return ret;
 }
 
