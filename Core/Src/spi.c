@@ -238,12 +238,134 @@ uint8_t CSP_SPI_WriteMemory(uint8_t* buffer, uint32_t address,uint32_t buffer_si
 
     uint8_t ret = HAL_OK;
 
+    if(address % SPINORFLASH_PAGE_MEMORY_BYTES)
+    {
+
+        //NOTE:Do not move the address forward, otherwise it will wrong when read data
+        address = ((address / SPINORFLASH_PAGE_MEMORY_BYTES)) * SPINORFLASH_PAGE_MEMORY_BYTES;
+        if(address > SPINORFLASH_SECTOR_ADDRESS_MAX)
+        {
+            return HAL_ERROR;
+        }
+    }
+
+    uint16_t loop = 0x00;
+    uint16_t w_size = 0x00;
+
+    if (buffer_size % SPINORFLASH_PAGE_MEMORY_BYTES)
+    {
+        loop = buffer_size / SPINORFLASH_PAGE_MEMORY_BYTES + 1;
+    }
+    else
+    {
+        loop = buffer_size / SPINORFLASH_PAGE_MEMORY_BYTES;
+    }
+
+    uint8_t w_addr[3] = {0};
+    uint8_t cmd = SPINORFLASH_PAGE_PROGRAM;
+    uint32_t current_addr = 0x00;
+
+    for (int i = 0; i < loop; ++i)
+    {
+        if ((buffer_size - SPINORFLASH_PAGE_MEMORY_BYTES * i) / SPINORFLASH_PAGE_MEMORY_BYTES)
+        {
+            w_size = SPINORFLASH_PAGE_MEMORY_BYTES;
+        }
+        else
+        {
+            w_size = (buffer_size - SPINORFLASH_PAGE_MEMORY_BYTES * i) % SPINORFLASH_PAGE_MEMORY_BYTES;
+        }
+
+        //don't use this line, the address is wrong because address is based on last address
+#if 0
+        address += (SPINORFLASH_PAGE_MEMORY_BYTES * i);
+
+        w_addr[0] = (address & 0xff0000) >> 16;
+        w_addr[1] = (address & 0x00ff00) >> 8;
+        w_addr[2] = address & 0x0000ff;
+#endif
+        current_addr = address + (SPINORFLASH_PAGE_MEMORY_BYTES * i);
+
+        w_addr[0] = (current_addr & 0xff0000) >> 16;
+        w_addr[1] = (current_addr & 0x00ff00) >> 8;
+        w_addr[2] = current_addr & 0x0000ff;
+
+        CSP_SPI_AutoPollingMemReady(SPINORFLASH_WRITE_TIMEOUT);
+
+        CSP_SPI_WriteEnable();
+
+        SPINORFLASH_CS_L;
+        ret += HAL_SPI_Transmit(&SPINORFLASH_SPI, &cmd, 1, SPINORFLASH_WRITE_TIMEOUT);
+        ret += HAL_SPI_Transmit(&SPINORFLASH_SPI, &w_addr[0], 3, SPINORFLASH_WRITE_TIMEOUT);
+        ret += HAL_SPI_Transmit(&SPINORFLASH_SPI, &buffer[i * SPINORFLASH_PAGE_MEMORY_BYTES], w_size, SPINORFLASH_WRITE_TIMEOUT);
+        SPINORFLASH_CS_H;
+
+        CSP_SPI_AutoPollingMemReady(SPINORFLASH_WRITE_TIMEOUT);
+    }
+
     return ret;
 }
 
 uint8_t CSP_SPI_ReadMemory(uint8_t* buffer, uint32_t address,uint32_t buffer_size) {
 
     uint8_t ret = HAL_OK;
+
+#if 0
+    if(address % SPINORFLASH_PAGE_MEMORY_BYTES)
+    {
+        address = ((address / SPINORFLASH_PAGE_MEMORY_BYTES) + 1) * SPINORFLASH_PAGE_MEMORY_BYTES;
+        if(address > SPINORFLASH_SECTOR_ADDRESS_MAX)
+        {
+            return HAL_ERROR;
+        }
+    }
+#endif
+
+    uint16_t loop = 0x00;
+    uint16_t w_size = 0x00;
+
+    if (buffer_size % SPINORFLASH_PAGE_MEMORY_BYTES)
+    {
+        loop = buffer_size / SPINORFLASH_PAGE_MEMORY_BYTES + 1;
+    }
+    else
+    {
+        loop = buffer_size / SPINORFLASH_PAGE_MEMORY_BYTES;
+    }
+
+    uint8_t w_addr[3] = {0};
+    uint8_t cmd = SPINORFLASH_READ_DATA;
+    uint32_t current_addr = 0x00;
+
+    for (int i = 0; i < loop; ++i)
+    {
+        if ((buffer_size - SPINORFLASH_PAGE_MEMORY_BYTES * i) / SPINORFLASH_PAGE_MEMORY_BYTES)
+        {
+            w_size = SPINORFLASH_PAGE_MEMORY_BYTES;
+        }
+        else
+        {
+            w_size = (buffer_size - SPINORFLASH_PAGE_MEMORY_BYTES * i) % SPINORFLASH_PAGE_MEMORY_BYTES;
+        }
+
+        current_addr = address + (SPINORFLASH_PAGE_MEMORY_BYTES * i);
+
+        w_addr[0] = (current_addr & 0xff0000) >> 16;
+        w_addr[1] = (current_addr & 0x00ff00) >> 8;
+        w_addr[2] = current_addr & 0x0000ff;
+
+        CSP_SPI_AutoPollingMemReady(SPINORFLASH_WRITE_TIMEOUT);
+
+        CSP_SPI_WriteEnable();
+
+        SPINORFLASH_CS_L;
+        ret += HAL_SPI_Transmit(&SPINORFLASH_SPI, &cmd, 1, SPINORFLASH_WRITE_TIMEOUT);
+        ret += HAL_SPI_Transmit(&SPINORFLASH_SPI, &w_addr[0], 3, SPINORFLASH_WRITE_TIMEOUT);
+        ret += HAL_SPI_Receive(&SPINORFLASH_SPI, &buffer[i * SPINORFLASH_PAGE_MEMORY_BYTES], w_size, SPINORFLASH_READ_TIMEOUT);
+        SPINORFLASH_CS_H;
+
+        CSP_SPI_AutoPollingMemReady(SPINORFLASH_WRITE_TIMEOUT);
+    }
 
     return ret;
 }

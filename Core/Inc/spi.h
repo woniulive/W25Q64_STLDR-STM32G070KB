@@ -63,6 +63,7 @@ extern SPI_HandleTypeDef hspi2;
 
 #define SPINORFLASH_WRITE_ENABLE              0x06
 
+#define SPINORFLASH_READ_DATA                 0x03
 #define SPINORFLASH_PAGE_PROGRAM              0x02
 #define SPINORFLASH_SECTOR_ERASE              0x20
 #define SPINORFLASH_BLOCK_ERASE_32K           0x52
@@ -72,6 +73,7 @@ extern SPI_HandleTypeDef hspi2;
 #define SPINORFLASH_READ_STATUS_REG1          0x05
 
 #define SPINORFLASH_SECTOR_MEMORY_BYTES       0x1000 //4KByte
+#define SPINORFLASH_PAGE_MEMORY_BYTES         0x100 //256Byte
 #define SPINORFLASH_SECTOR_ADDRESS_MAX        0xFFFFFF
 #define SPINORFLASH_SECTOR_ADDRESS_MIN        0x000000
 #define SPINORFLASH_SECTOR_NUM_MAX            0xFFF
