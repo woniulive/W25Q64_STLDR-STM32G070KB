@@ -20,8 +20,8 @@ struct StorageInfo const StorageInfo = {
 
     // Specify Size and Address of Sectors (view example below)
     {   {
-            (MEMORY_FLASH_SIZE / MEMORY_BLOCK_SIZE),  // Sector Numbers,
-            (uint32_t) MEMORY_BLOCK_SIZE
+            (MEMORY_FLASH_SIZE / MEMORY_SECTOR_SIZE),  // Sector Numbers,
+            (uint32_t) MEMORY_SECTOR_SIZE
         },       //Sector Size
 
         { 0x00000000, 0x00000000 }
