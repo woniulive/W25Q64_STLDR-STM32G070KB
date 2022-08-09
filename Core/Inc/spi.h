@@ -71,6 +71,12 @@ extern SPI_HandleTypeDef hspi2;
 
 #define SPINORFLASH_READ_STATUS_REG1          0x05
 
+#define SPINORFLASH_SECTOR_MEMORY_BYTES       0x1000 //4KByte
+#define SPINORFLASH_SECTOR_ADDRESS_MAX        0xFFFFFF
+#define SPINORFLASH_SECTOR_ADDRESS_MIN        0x000000
+#define SPINORFLASH_SECTOR_NUM_MAX            0xFFF
+#define SPINORFLASH_SECTOR_NUM_MIN            0x000
+
 /* USER CODE END Private defines */
 
 void MX_SPI2_Init(void);

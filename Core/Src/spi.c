@@ -146,11 +146,35 @@ uint8_t CSP_SPI_Erase_Chip(void) {
 
     uint8_t ret = HAL_OK;
 
+    uint8_t cmd = SPINORFLASH_CHIP_ERASE1;
+
+    CSP_SPI_WriteEnable();
+
+    SPINORFLASH_CS_L;
+    ret += HAL_SPI_Transmit(&SPINORFLASH_SPI, &cmd, 1, SPINORFLASH_WRITE_TIMEOUT);
+    SPINORFLASH_CS_H;
+
+    CSP_SPI_AutoPollingMemReady(SPINORFLASH_WRITE_TIMEOUT);
+
     return ret;
 }
 
 uint8_t CSP_SPI_AutoPollingMemReady(uint32_t timeout) {
+
     uint8_t ret = HAL_OK;
+
+    uint8_t cmd = SPINORFLASH_READ_STATUS_REG1;
+    uint8_t status = 0x00;
+
+    do
+    {
+        SPINORFLASH_CS_L;
+        ret += HAL_SPI_Transmit(&SPINORFLASH_SPI, &cmd, 1, SPINORFLASH_WRITE_TIMEOUT);
+        ret += HAL_SPI_Receive(&SPINORFLASH_SPI, &status, 1, SPINORFLASH_READ_TIMEOUT);
+        SPINORFLASH_CS_H;
+
+        timeout--;
+    }while((status & SPINORFLASH_WIP_BIT) && timeout);
 
     return ret;
 }
@@ -158,6 +182,11 @@ uint8_t CSP_SPI_AutoPollingMemReady(uint32_t timeout) {
 static uint8_t CSP_SPI_WriteEnable(void) {
 
     uint8_t ret = HAL_OK;
+
+    uint8_t cmd = SPINORFLASH_WRITE_ENABLE;
+    SPINORFLASH_CS_L;
+    ret = HAL_SPI_Transmit(&SPINORFLASH_SPI, &cmd, 1, SPINORFLASH_WRITE_TIMEOUT);
+    SPINORFLASH_CS_H;
 
     return ret;
 }
@@ -170,6 +199,37 @@ uint8_t CSP_SPI_Configuration(void) {
 uint8_t CSP_SPI_EraseSector(uint32_t EraseStartAddress, uint32_t EraseEndAddress) {
 
     uint8_t ret = HAL_OK;
+
+    if (EraseStartAddress % SPINORFLASH_SECTOR_MEMORY_BYTES)
+    {
+        EraseStartAddress = ((EraseStartAddress / SPINORFLASH_SECTOR_MEMORY_BYTES)) * SPINORFLASH_SECTOR_MEMORY_BYTES;
+        if (EraseStartAddress > SPINORFLASH_SECTOR_ADDRESS_MAX)
+        {
+            return HAL_ERROR;
+        }
+    }
+
+    uint8_t w_addr[3] = {0};
+    uint8_t cmd = SPINORFLASH_SECTOR_ERASE;
+
+    do
+    {
+        w_addr[0] = (EraseStartAddress & 0xff0000) >> 16;
+        w_addr[1] = (EraseStartAddress & 0x00ff00) >> 8;
+        w_addr[2] = EraseStartAddress & 0x0000ff;
+
+        CSP_SPI_WriteEnable();
+
+        SPINORFLASH_CS_L;
+        ret += HAL_SPI_Transmit(&SPINORFLASH_SPI, &cmd, 1, SPINORFLASH_WRITE_TIMEOUT);
+        ret += HAL_SPI_Transmit(&SPINORFLASH_SPI, &w_addr[0], 3, SPINORFLASH_WRITE_TIMEOUT);
+        SPINORFLASH_CS_H;
+
+        CSP_SPI_AutoPollingMemReady(SPINORFLASH_WRITE_TIMEOUT);
+
+        EraseStartAddress += SPINORFLASH_SECTOR_MEMORY_BYTES;
+    }while(EraseStartAddress <= EraseEndAddress); //use <= here
+
 
     return ret;
 }
