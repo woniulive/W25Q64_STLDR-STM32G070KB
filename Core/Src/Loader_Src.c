@@ -67,9 +67,23 @@ Init(void) {
  * @retval  LOADER_OK = 1       : Operation succeeded
  * @retval  LOADER_FAIL = 0 : Operation failed
  */
-int Read (uint32_t Address, uint32_t Size, uint8_t* buffer)
-{
-    return 1;
+int Read (uint32_t Address, uint32_t Size, uint8_t* buffer) {
+
+    __set_PRIMASK(0); //enable interrupts
+
+    if (HAL_SPI_Abort(&hspi2) != HAL_OK) {
+        __set_PRIMASK(1); //disable interrupts
+        return LOADER_FAIL;
+    }
+
+
+    if (CSP_SPI_ReadMemory((uint8_t*) buffer, (Address & (0x0fffffff)), Size) != HAL_OK) {
+        __set_PRIMASK(1); //disable interrupts
+        return LOADER_FAIL;
+    }
+
+    __set_PRIMASK(1); //disable interrupts
+    return LOADER_OK;
 }
 
 /**
