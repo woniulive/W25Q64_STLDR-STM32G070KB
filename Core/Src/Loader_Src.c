@@ -188,12 +188,20 @@ CheckSum(uint32_t StartAddress, uint32_t Size, uint32_t InitVal) {
     uint8_t missalignementSize = Size;
     int cnt;
     uint32_t Val;
+    uint8_t value;
 
     StartAddress -= StartAddress % 4;
     Size += (Size % 4 == 0) ? 0 : 4 - (Size % 4);
 
     for (cnt = 0; cnt < Size; cnt += 4) {
-        Val = *(uint32_t*) StartAddress;
+        CSP_SPI_ReadMemory(&value, StartAddress ,1);
+        Val = value;
+        CSP_SPI_ReadMemory(&value, StartAddress + 1,1);
+        Val+= value<<8;
+        CSP_SPI_ReadMemory(&value, StartAddress + 2,1);
+        Val+= value<<16;
+        CSP_SPI_ReadMemory(&value, StartAddress + 3,1);
+        Val+= value<<24;
         if (missalignementAddress) {
             switch (missalignementAddress) {
                 case 1:
@@ -261,6 +269,7 @@ Verify(uint32_t MemoryAddr, uint32_t RAMBufferAddr, uint32_t Size, uint32_t miss
 
     __set_PRIMASK(0); //enable interrupts
     uint32_t VerifiedData = 0, InitVal = 0;
+    uint8_t TmpBuffer = 0x00;
     uint64_t checksum;
     Size *= 4;
 
@@ -272,7 +281,8 @@ Verify(uint32_t MemoryAddr, uint32_t RAMBufferAddr, uint32_t Size, uint32_t miss
     checksum = CheckSum((uint32_t) MemoryAddr + (missalignement & 0xf),
                         Size - ((missalignement >> 16) & 0xF), InitVal);
     while (Size > VerifiedData) {
-        if (*(uint8_t*) MemoryAddr++
+        CSP_SPI_ReadMemory(&TmpBuffer, MemoryAddr+VerifiedData, 1);
+        if (TmpBuffer
             != *((uint8_t*) RAMBufferAddr + VerifiedData)) {
             __set_PRIMASK(1); //disable interrupts
             return ((checksum << 32) + (MemoryAddr + VerifiedData));
