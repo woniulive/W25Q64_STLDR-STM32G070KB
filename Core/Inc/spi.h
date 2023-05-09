@@ -52,9 +52,9 @@ extern SPI_HandleTypeDef hspi2;
 #define SPINORFLASH_SPI                       hspi2
 
 #define MEMORY_FLASH_SIZE                     0x800000 /* 64 MBits => 8MBytes */
-#define MEMORY_BLOCK_SIZE                     0x10000   /* 512 sectors of 64KBytes */
-#define MEMORY_SECTOR_SIZE                    0x1000    /* 8162 subsectors of 4kBytes */
-#define MEMORY_PAGE_SIZE                      0x100     /* 131072 pages of 256 bytes */
+#define MEMORY_BLOCK_SIZE                     0x10000   /* 128 sectors of 64KBytes */
+#define MEMORY_SECTOR_SIZE                    0x1000    /* 2048 subsectors of 4kBytes */
+#define MEMORY_PAGE_SIZE                      0x100     /* 32768 pages of 256 bytes */
 
 #define SPINORFLASH_READ_TIMEOUT              0xFFFF
 #define SPINORFLASH_WRITE_TIMEOUT             0xFFFF
